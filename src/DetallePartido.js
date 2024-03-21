@@ -12,6 +12,7 @@ const DetallePartido = ({modalDetallePartido, setModalDetallePartido,partido}) =
     animationType='slide'
     visible={modalDetallePartido}> 
     
+    <Text>{partido.titulo}</Text>
     <Text>{partido.name}</Text>
     
     

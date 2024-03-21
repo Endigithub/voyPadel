@@ -25,10 +25,13 @@ const fechaHoy = new Date();
 const eventos = [
     { id: 1, fecha: fechaHoy, titulo: 'Partido pista 1', hora: '10:00 AM' },
     { id: 2, fecha: fechaHoy, titulo: 'Partido pista 2', hora: '12:30 PM' },
-    { id: 3, fecha: '2024-03-02', titulo: 'Partido pista 1', hora: '5:00 PM' },
-    { id: 4, fecha: '2024-03-04', titulo: 'Partido pista 11', hora: '09:00 AM' },
+    { id: 3, fecha: fechaHoy, titulo: 'Partido pista 3', hora: '13:00 AM' },
+    { id: 4, fecha: fechaHoy, titulo: 'Partido pista 4', hora: '14:30 PM' },
+    { id: 5, fecha: '2024-03-02', titulo: 'Partido pista 1', hora: '5:00 PM' },
+    { id: 6, fecha: '2024-03-04', titulo: 'Partido pista 11', hora: '09:00 AM' },
   ];
 const diaPartidos = [partido1,partido2];
+
 
 //pasar parametro a hijo
 let partido =[];
@@ -82,20 +85,24 @@ const Agenda = () => {
   const swiper = useRef();
   const [value, setValue] = useState(new Date());
   let day = value.toLocaleDateString('es-ES', opciones).toLocaleLowerCase();
-  const [week, setWeek] = useState(0);
+  const [week, setWeek] = useState(moment().week());
   
 
   const weeks = React.useMemo(() => {
-    const start = moment().add(week, 'weeks').startOf('week');
 
-    return [-1, 0, 1].map(adj => {
+    const start = moment().week(week).startOf('week')
+    console.log ("fecha actual despues del add week : " + start.format("MM-DD-YYYY"))
+    //const start = moment().startOf('week');
+console.log("start: "+ start)
+    return [-3,-2,-1, 0, 1, 2, 3].map(adj => {
       return Array.from({ length: 7 }).map((_, index) => {
-        const date = moment(start).add(adj, 'week').add(index, 'day');
+
+        const date = moment(start).add( adj, 'week').add(index, 'day');
         
         return {
           weekday: date.format('ddd'),
           date: date.toDate(),
-          
+          month: date.format('MMM')
         };
       });
     });
@@ -105,7 +112,7 @@ const Agenda = () => {
    
     const renderItem = ({item}) => {
         return (
-          <TouchableOpacity style={{marginRight: 10, marginTop: 17}}
+          <TouchableOpacity style={{marginRight: 10, marginTop: 17, marginBottom: 10}}
           onPress={() =>{
             setModalDetallePartido(true)
             detallePartido(item)}}>
@@ -139,26 +146,27 @@ const Agenda = () => {
       <View style={styles.picker}>
         
         <Swiper
-          index={1}
+          index={3}
           ref={swiper}
           loop={false}
           showsPagination={false}
           onIndexChanged={
-            ind => {
-                   
-          {/*if (ind === 1) {
-              return;
-            }*/}
-            setTimeout(() => {
-              
+            async ind => {
+                   //console.log("semana antes de cambiar: " + week)
+                   //console.log("ind antes de cambiar: " + ind)
               const newIndex = ind -1;              
-              const newWeek = week + newIndex;              
-              setWeek(newWeek);              
-              setValue(moment(value).add(newIndex, 'week').toDate());
-              swiper.current.scrollTo(1, false);
-            
-            
-            }, 10);
+              const newWeek = week + newIndex;             
+              //setWeek(newWeek); 
+              //console.log("semana despues de cambiar: " + newWeek)
+
+              console.log("ind indice:  " + ind)
+              //setWeek(ind >= 1 ? week +1 : week -1);             
+              //setValue(moment(value).add(newIndex, 'week').toDate());
+
+              /*setTimeout(() => {
+                swiper.current.scrollTo(1, false);
+
+              }, 1);*/
           }}>
           {weeks.map((dates, index) => (
             
@@ -166,7 +174,7 @@ const Agenda = () => {
               style={[styles.itemRow, { paddingHorizontal: 16 }]}
               key={index}>
               {dates.map((item, dateIndex) => {
-               
+
                 const isActive =  value.toDateString() === item.date.toDateString();
                 
                 return (
@@ -189,6 +197,7 @@ const Agenda = () => {
                         ]}>
                         {item.weekday}
                       </Text>
+                      
                       <Text
                         style={[
                             styles.itemDate,
@@ -197,6 +206,16 @@ const Agenda = () => {
                         {item.date.getDate()}
                         
                       </Text>
+
+                      <Text
+                        style={[
+                            styles.itemMonth,
+                          isActive && { color: '#fff' },
+                        ]}>
+                        {item.month}
+                        
+                      </Text>
+
                     </View>
                   </TouchableWithoutFeedback>
                 );
@@ -206,7 +225,7 @@ const Agenda = () => {
         </Swiper>
       </View>
 
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingVertical: 24 }}>
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingVertical: 0 }}>
         
         <Text style={styles.subtitle}>{day}</Text>
         
@@ -261,21 +280,22 @@ const Agenda = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingVertical: 24,
+    paddingVertical: 10,
   },
   header: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 5,
+    alignItems: 'center',
   },
   title: {
-    fontSize: 32,
+    fontSize: 25,
     fontWeight: '700',
     color: '#1d1d1d',
-    marginBottom: 12,
+    marginBottom: 5,
   },
   picker: {
     flex: 1,
-    maxHeight: 74,
-    paddingVertical: 12,
+    maxHeight: 85,
+    paddingVertical: 5,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -292,7 +312,7 @@ const styles = StyleSheet.create({
   /** Item */
   item: {
     flex: 1,
-    height: 50,
+    height: 60,
     marginHorizontal: 4,
     paddingVertical: 6,
     paddingHorizontal: 4,
@@ -310,7 +330,13 @@ const styles = StyleSheet.create({
     marginHorizontal: -4,
   },
   itemWeekday: {
-    fontSize: 13,
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#737373',
+    marginBottom: 2,
+  },
+  itemMonth: {
+    fontSize: 10,
     fontWeight: '500',
     color: '#737373',
     marginBottom: 4,
