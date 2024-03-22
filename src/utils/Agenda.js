@@ -176,7 +176,7 @@ console.log("start: "+ start)
               {dates.map((item, dateIndex) => {
 
                 const isActive =  value.toDateString() === item.date.toDateString();
-                
+                const isToday = new Date().toDateString() === item.date.toDateString();
                 return (
                   <TouchableWithoutFeedback
                     key={dateIndex}
@@ -189,6 +189,7 @@ console.log("start: "+ start)
                           backgroundColor: '#111',
                           borderColor: '#111',
                         },
+                        isToday && { borderWidth: 2, borderColor: 'blue' },
                       ]}>
                       <Text
                         style={[
