@@ -15,40 +15,43 @@ import moment from 'moment';
 import Swiper from 'react-native-swiper';
 import DetallePartido from '../DetallePartido';
 import NuevoPartido from '../NuevoPartido';
-//import { Agenda } from 'react-native-calendars';
+import FiltrosAgenda from './FiltrosAgenda';
+
 
 
 const { width } = Dimensions.get('window');
 const partido1 = {id: 1,lugarPartido:'Partido 1',disponibilidad:'completo'}
 const partido2 = {id: 2,lugarPartido:'Partido 2',disponibilidad:'Disponible 2 posiciones'}
 const fechaHoy = new Date();
-const eventos = [
-    { id: 1, fecha: fechaHoy, titulo: 'Partido pista 1', hora: '10:00 AM' },
-    { id: 2, fecha: fechaHoy, titulo: 'Partido pista 2', hora: '12:30 PM' },
-    { id: 3, fecha: fechaHoy, titulo: 'Partido pista 3', hora: '13:00 AM' },
-    { id: 4, fecha: fechaHoy, titulo: 'Partido pista 4', hora: '14:30 PM' },
-    { id: 5, fecha: '2024-03-02', titulo: 'Partido pista 1', hora: '5:00 PM' },
-    { id: 6, fecha: '2024-03-04', titulo: 'Partido pista 11', hora: '09:00 AM' },
+let eventos = [
+    { id: 1, fecha: fechaHoy, titulo: 'Partido pista 1', hora: '10:00 AM', categoria:'A', distancia: '5'},
+    { id: 2, fecha: fechaHoy, titulo: 'Partido pista 2', hora: '10:00 AM', categoria:'A', distancia: '3' },
+    { id: 3, fecha: fechaHoy, titulo: 'Partido pista 3', hora: '13:00 AM', categoria:'B', distancia: '10' },
+    { id: 4, fecha: fechaHoy, titulo: 'Partido pista 4', hora: '14:30 PM', categoria:'B', distancia: '20' },
+    { id: 5, fecha: fechaHoy, titulo: 'Partido pista 5', hora: '10:00 AM', categoria:'A', distancia: '22'},
+    { id: 6, fecha: fechaHoy, titulo: 'Partido pista 11', hora: '09:00 AM', categoria:'C', distancia: '100' },
+    { id: 7, fecha: fechaHoy, titulo: 'Partido pista 12', hora: '20:00 AM', categoria:'D', distancia: '1' },
   ];
+let eventosCloned = eventos;
+  
+
 const diaPartidos = [partido1,partido2];
 
 
-//pasar parametro a hijo
+//pasar parametros a hijos
 let partido =[];
+let eventosDate = [];
 
 function detallePartido(item){
-  console.log('item' +item.titulo);
     const mensajelistPartido = '';
-
     partido = item;
-    console.log('Partido ' +partido.titulo);
     return partido;
 }
 function getPartidosFechaSelec(value){
     
    const formatFechaSelec = value.getDate()+"/"+value.getMonth()+"/"+value.getFullYear();
    let fecha;
-   const eventosFecha = [];
+   let eventosFecha = [];
    eventos.forEach(item=>{
         
         fecha =new Date( item.fecha);
@@ -56,7 +59,7 @@ function getPartidosFechaSelec(value){
         if(fecha === formatFechaSelec)
             eventosFecha.push(item);
     })
-
+    eventosDate = eventosFecha;
     return eventosFecha;
 
 }
@@ -80,7 +83,24 @@ const Agenda = () => {
   //ir a otra pantalla
   const [modalDetallePartido, setModalDetallePartido] = useState({})
   const [nuevoPartido, setNuevoPartido] = useState({})
+  const [filtroAgenda ,setFiltroAgenda] = useState({})
+  //Del hijo
   
+  const recibirDatoDelHijo = (datoRecibido) => {
+    
+    
+    if(datoRecibido !==null && datoRecibido.length>0){
+      
+      eventos = [];
+      eventos = datoRecibido;
+    }else eventos = eventosCloned;
+    
+   
+  };
+  //fin hijo
+
+  
+
   let cont = 0;
   const swiper = useRef();
   const [value, setValue] = useState(new Date());
@@ -91,9 +111,9 @@ const Agenda = () => {
   const weeks = React.useMemo(() => {
 
     const start = moment().week(week).startOf('week')
-    console.log ("fecha actual despues del add week : " + start.format("MM-DD-YYYY"))
+   
     //const start = moment().startOf('week');
-console.log("start: "+ start)
+
     return [-3,-2,-1, 0, 1, 2, 3].map(adj => {
       return Array.from({ length: 7 }).map((_, index) => {
 
@@ -111,6 +131,7 @@ console.log("start: "+ start)
     
    
     const renderItem = ({item}) => {
+      
         return (
           <TouchableOpacity style={{marginRight: 10, marginTop: 17, marginBottom: 10}}
           onPress={() =>{
@@ -126,6 +147,8 @@ console.log("start: "+ start)
                   }}>
                   <Text>{item.hora}</Text> 
                   <Text>{item.titulo}</Text>
+                  <Text>{item.categoria}</Text>
+                  <Text>{item.distancia}</Text>
                   <Avatar.Text label= 'D' /> 
                   
                  
@@ -135,6 +158,16 @@ console.log("start: "+ start)
           </TouchableOpacity>
         );
       };
+      const quitarFiltros = () => {
+          eventos = [];
+          eventos = eventosCloned;          
+          eventosCloned.forEach(i=>{
+            //renderItem(i);
+            
+          })
+        
+       
+      };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -142,6 +175,13 @@ console.log("start: "+ start)
       <View style={styles.header}>
         <Text style={styles.title}>Partidos</Text>
       </View>
+      <TouchableWithoutFeedback onPress={()=>{setFiltroAgenda(true)}}>
+        <View style={styles.picker}><Text>Filtros</Text></View>
+      </TouchableWithoutFeedback> 
+      <TouchableWithoutFeedback onPress={ quitarFiltros}>
+        <View style={styles.picker}><Text>Quitar Filtros</Text></View>
+      </TouchableWithoutFeedback> 
+      
 
       <View style={styles.picker}>
         
@@ -150,24 +190,8 @@ console.log("start: "+ start)
           ref={swiper}
           loop={false}
           showsPagination={false}
-          onIndexChanged={
-            async ind => {
-                   //console.log("semana antes de cambiar: " + week)
-                   //console.log("ind antes de cambiar: " + ind)
-              const newIndex = ind -1;              
-              const newWeek = week + newIndex;             
-              //setWeek(newWeek); 
-              //console.log("semana despues de cambiar: " + newWeek)
+          >
 
-              console.log("ind indice:  " + ind)
-              //setWeek(ind >= 1 ? week +1 : week -1);             
-              //setValue(moment(value).add(newIndex, 'week').toDate());
-
-              /*setTimeout(() => {
-                swiper.current.scrollTo(1, false);
-
-              }, 1);*/
-          }}>
           {weeks.map((dates, index) => (
             
             <View
@@ -230,7 +254,7 @@ console.log("start: "+ start)
         
         <Text style={styles.subtitle}>{day}</Text>
         
-        {/*<Text style={styles.subtitle}>{getPartidosFechaSelec(value)}</Text>*/}
+        
         <View style={styles.placeholder}>
           <View style={styles.placeholderInset}>
            {/* {diaPartidos.map((partido, index) => (
@@ -274,6 +298,18 @@ console.log("start: "+ start)
         nuevoPartido = {nuevoPartido}
         setNuevoPartido = {setNuevoPartido}
         />
+
+
+
+    <FiltrosAgenda
+      filtroAgenda = {filtroAgenda}
+      setFiltroAgenda = {setFiltroAgenda}
+     eventosDate = {eventosDate}
+     eventosCloned = {eventosCloned}
+     enviarDatoAlPadre={recibirDatoDelHijo}
+        />
+      
+      
   </SafeAreaView>
   )
 
